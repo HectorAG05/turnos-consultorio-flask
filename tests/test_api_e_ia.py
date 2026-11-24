@@ -1,6 +1,15 @@
 from app.ia.servicio import nivel_de_riesgo, predecir_ausentismo
 
-from .conftest import proximo
+from .conftest import PASSWORD, proximo
+
+
+def test_login_y_logout_por_api(client):
+    assert client.post("/api/login", json={"username": "laura", "password": "mala"}).status_code == 401
+    respuesta = client.post("/api/login", json={"username": "laura", "password": PASSWORD})
+    assert respuesta.get_json() == {"usuario": "laura", "rol": "secretaria"}
+    assert client.get("/api/turnos").status_code == 200
+    client.post("/api/logout")
+    assert client.get("/api/turnos").status_code == 401
 
 
 def test_api_sin_sesion_responde_401(client):

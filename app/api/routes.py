@@ -2,6 +2,8 @@
 
 | Método | Endpoint                 | Acción                                   |
 |--------|--------------------------|------------------------------------------|
+| POST   | /api/login               | Iniciar sesión (para Postman)            |
+| POST   | /api/logout              | Cerrar sesión                            |
 | GET    | /api/turnos              | Listar turnos (filtrados por rol)        |
 | GET    | /api/turnos/<id>         | Ver un turno                             |
 | POST   | /api/turnos              | Crear turno (CU-01)                      |
@@ -17,7 +19,7 @@
 Requiere sesión iniciada (cookie de Flask-Login). Sin sesión responde 401.
 """
 from flask import Blueprint, abort, jsonify, request
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user, logout_user
 
 from ..extensions import db
 from ..ia.servicio import DatosPrediccionInvalidos, nivel_de_riesgo, predecir_ausentismo, validar_datos
@@ -58,6 +60,25 @@ def _fecha_y_hora(datos):
     if not (fecha and hora):
         abort(400, description="Enviá «fecha» (AAAA-MM-DD) y «hora» (HH:MM).")
     return fecha, hora
+
+
+# ---------------- Sesión ----------------
+@api_bp.post("/login")
+def login_api():
+    """Login en JSON para probar la API desde Postman. Guarda la sesión en una cookie."""
+    datos = _json()
+    usuario = Usuario.query.filter_by(username=str(datos.get("username", "")).strip().lower()).first()
+    if usuario is None or not usuario.check_password(str(datos.get("password", ""))):
+        return _error("Usuario o contraseña incorrectos.", 401)
+    login_user(usuario)
+    return jsonify({"usuario": usuario.username, "rol": usuario.rol})
+
+
+@api_bp.post("/logout")
+@login_required
+def logout_api():
+    logout_user()
+    return jsonify({"mensaje": "Sesión cerrada."})
 
 
 # ---------------- Turnos ----------------
