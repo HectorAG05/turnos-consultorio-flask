@@ -2,8 +2,10 @@
 
 Segunda entrega de **Análisis y Metodología de Sistemas**. Prototipo funcional y recortado del sistema definido en el SRS de la primera entrega (*Sistema de Gestión de Turnos para Consultorio Médico*, versión 1.0).
 
-- **Aplicación en producción (Render):** _completar con el link_
-- **Repositorio:** _completar con el link_
+- **Aplicación en producción (Render):** https://turnos-consultorio-6n39.onrender.com
+- **Repositorio:** https://github.com/HectorAG05/turnos-consultorio-flask
+
+> En el plan gratuito de Render el servicio se duerme tras unos minutos sin uso: la primera visita puede tardar alrededor de un minuto en responder.
 
 ## Qué incluye
 
@@ -123,7 +125,7 @@ También se puede crear una cuenta de paciente nueva desde `/auth/registro`.
 python -m pytest
 ```
 
-24 tests cubren el login y el hash con Bcrypt, el control por rol, las reglas de turnos (horarios disponibles, superposición, reprogramación y cancelación lógica), el CRUD de pacientes, la API REST y el modelo de IA.
+26 tests cubren la configuración de la base, el login y el hash con Bcrypt, el control por rol, las reglas de turnos (horarios disponibles, superposición, reprogramación y cancelación lógica), el CRUD de pacientes, la API REST y el modelo de IA.
 
 ## Despliegue en Render
 

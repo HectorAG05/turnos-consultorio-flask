@@ -14,10 +14,21 @@ load_dotenv(BASE_DIR / ".env")
 
 def _database_url():
     """SQLite en desarrollo; PostgreSQL en producción (variable DATABASE_URL)."""
-    url = os.getenv("DATABASE_URL") or f"sqlite:///{BASE_DIR / 'instance' / 'turnos.db'}"
-    # Render entrega la URL con el esquema "postgres://", pero SQLAlchemy exige "postgresql://"
-    if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql://", 1)
+    return normalizar_url_postgres(
+        os.getenv("DATABASE_URL") or f"sqlite:///{BASE_DIR / 'instance' / 'turnos.db'}"
+    )
+
+
+def normalizar_url_postgres(url):
+    """Ajusta la URL de PostgreSQL para SQLAlchemy con el driver psycopg2.
+
+    Render puede entregar "postgres://..." (esquema que SQLAlchemy no acepta) y
+    SQLAlchemy 2.1 usa por defecto otro driver (psycopg 3), así que se indica
+    explícitamente el que está en requirements.txt.
+    """
+    for esquema in ("postgres://", "postgresql://"):
+        if url.startswith(esquema):
+            return "postgresql+psycopg2://" + url[len(esquema):]
     return url
 
 
