@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}{{ paciente.nombre_completo }}{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <div>
+    <h1>{{ paciente.nombre_completo }}</h1>
+    <p class="subtitulo">DNI {{ paciente.dni }} · {{ paciente.cobertura }}</p>
+  </div>
+  <div class="acciones">
+    <a class="boton" href="{{ url_for('turnos.nuevo', dni=paciente.dni) }}">Dar turno</a>
+    <a class="boton boton--secundario" href="{{ url_for('pacientes.editar', dni=paciente.dni) }}">Editar</a>
+    <form method="post" action="{{ url_for('pacientes.eliminar', dni=paciente.dni) }}"
+          onsubmit="return confirm('¿Eliminar a {{ paciente.nombre_completo }}? Esta acción no se puede deshacer.');">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="boton boton--peligro" type="submit">Eliminar</button>
+    </form>
+  </div>
+</div>
+
+<div class="grilla-2">
+  <section class="tarjeta">
+    <h2>Ficha del paciente</h2>
+    <dl class="datos">
+      <dt>Teléfono</dt><dd>{{ paciente.telefono }}</dd>
+      <dt>Email</dt><dd>{{ paciente.email or '—' }}</dd>
+      <dt>Cobertura</dt><dd>{{ paciente.cobertura }}</dd>
+      <dt>Turnos</dt><dd>{{ turnos|length }}</dd>
+    </dl>
+  </section>
+  <section class="tarjeta tabla-envoltura">
+    <h2>Historial de turnos</h2>
+    <table>
+      <thead><tr><th>Fecha</th><th>Hora</th><th>Médico</th><th>Estado</th></tr></thead>
+      <tbody>
+        {% for t in turnos %}
+        <tr>
+          <td>{{ t.fecha|fecha }}</td><td>{{ t.hora|hora }}</td><td>{{ t.medico.nombre_completo }}</td>
+          <td><span class="etiqueta estado--{{ t.estado }}">{{ t.estado }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="vacio">Sin turnos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{% endblock %}

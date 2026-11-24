@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block titulo %}Registro de paciente{% endblock %}
+{% block contenido %}
+<section class="tarjeta" style="max-width: 640px; margin: 1rem auto;">
+  <h1>Registro de paciente</h1>
+  <p class="subtitulo">Creá tu cuenta para pedir y gestionar tus turnos.</p>
+  <form class="form" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="grilla-2">
+      <label>DNI <span class="ayuda">7 u 8 números, sin puntos</span>
+        <input name="dni" value="{{ datos.dni or '' }}" inputmode="numeric" pattern="\d{7,8}" required>
+      </label>
+      <label>Teléfono
+        <input name="telefono" value="{{ datos.telefono or '' }}" required>
+      </label>
+      <label>Nombre
+        <input name="nombre" value="{{ datos.nombre or '' }}" required>
+      </label>
+      <label>Apellido
+        <input name="apellido" value="{{ datos.apellido or '' }}" required>
+      </label>
+      <label>Email <span class="ayuda">opcional</span>
+        <input name="email" type="email" value="{{ datos.email or '' }}">
+      </label>
+      <label>Obra social
+        <select name="id_obra_social">
+          <option value="">Particular (sin obra social)</option>
+          {% for obra in obras_sociales %}
+            <option value="{{ obra.id_obra_social }}" {{ 'selected' if datos.id_obra_social == obra.id_obra_social|string }}>{{ obra.nombre }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Usuario
+        <input name="username" value="{{ datos.username or '' }}" autocomplete="username" required>
+      </label>
+      <span></span>
+      <label>Contraseña <span class="ayuda">mínimo 8 caracteres</span>
+        <input name="password" type="password" minlength="8" autocomplete="new-password" required>
+      </label>
+      <label>Repetir contraseña
+        <input name="password2" type="password" minlength="8" autocomplete="new-password" required>
+      </label>
+    </div>
+    <div class="acciones">
+      <button class="boton" type="submit">Crear cuenta</button>
+      <a class="boton boton--secundario" href="{{ url_for('auth.login') }}">Ya tengo cuenta</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

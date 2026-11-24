@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Nuevo paciente' if es_alta else 'Editar paciente' }}{% endblock %}
+{% block contenido %}
+<section class="tarjeta" style="max-width: 640px; margin: 0 auto;">
+  <h1>{{ 'Nuevo paciente' if es_alta else 'Editar paciente' }}</h1>
+  <p class="subtitulo">{{ 'La obra social es opcional: el sistema admite pacientes particulares.' if es_alta else 'DNI ' ~ datos.dni }}</p>
+  <form class="form" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="grilla-2">
+      {% if es_alta %}
+      <label>DNI <span class="ayuda">7 u 8 números, sin puntos</span>
+        <input name="dni" value="{{ datos.dni or '' }}" inputmode="numeric" pattern="\d{7,8}" required>
+      </label>
+      {% endif %}
+      <label>Teléfono
+        <input name="telefono" value="{{ datos.telefono or '' }}" required>
+      </label>
+      <label>Nombre
+        <input name="nombre" value="{{ datos.nombre or '' }}" required>
+      </label>
+      <label>Apellido
+        <input name="apellido" value="{{ datos.apellido or '' }}" required>
+      </label>
+      <label>Email <span class="ayuda">opcional</span>
+        <input name="email" type="email" value="{{ datos.email or '' }}">
+      </label>
+      <label>Obra social
+        <select name="id_obra_social">
+          <option value="">Particular (sin obra social)</option>
+          {% for obra in obras_sociales %}
+            <option value="{{ obra.id_obra_social }}" {{ 'selected' if datos.id_obra_social == obra.id_obra_social|string }}>{{ obra.nombre }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="acciones">
+      <button class="boton" type="submit">{{ 'Registrar paciente' if es_alta else 'Guardar cambios' }}</button>
+      <a class="boton boton--secundario" href="{{ url_for('pacientes.lista') if es_alta else url_for('pacientes.ficha', dni=datos.dni) }}">Cancelar</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

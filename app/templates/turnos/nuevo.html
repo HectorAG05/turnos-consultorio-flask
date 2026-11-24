@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block titulo %}Nuevo turno{% endblock %}
+{% block contenido %}
+<h1>Nuevo turno</h1>
+{% set paso = 3 if (medico and fecha) else (2 if paciente else 1) %}
+<ol class="pasos">
+  <li class="{{ 'activo' if paso == 1 else 'hecho' }}">1 · Paciente</li>
+  <li class="{{ 'activo' if paso == 2 else ('hecho' if paso > 2 else '') }}">2 · Médico y fecha</li>
+  <li class="{{ 'activo' if paso == 3 else '' }}">3 · Horario</li>
+</ol>
+
+<div class="grilla-2">
+  <section class="tarjeta">
+    <form class="form" method="get">
+      {% if current_user.rol == 'secretaria' %}
+      <label>DNI del paciente
+        <input name="dni" value="{{ dni }}" inputmode="numeric" placeholder="Ej: 32456789" required>
+      </label>
+      {% endif %}
+      {% if paciente %}
+        <div class="ficha">
+          <strong>{{ paciente.nombre_completo }}</strong> · {{ paciente.cobertura }}<br>
+          <span class="ayuda">DNI {{ paciente.dni }} · Tel. {{ paciente.telefono }}</span>
+        </div>
+      {% elif dni %}
+        <a class="boton boton--secundario" href="{{ url_for('pacientes.nuevo', dni=dni) }}">Dar de alta al paciente {{ dni }}</a>
+      {% endif %}
+
+      <label>Especialidad
+        <select name="id_especialidad" onchange="this.form.submit()">
+          <option value="">Todas</option>
+          {% for esp in especialidades %}
+            <option value="{{ esp.id_especialidad }}" {{ 'selected' if esp.id_especialidad == id_especialidad }}>{{ esp.nombre }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Médico
+        <select name="matricula" required>
+          <option value="">Elegí un médico</option>
+          {% for m in medicos %}
+            <option value="{{ m.matricula }}" {{ 'selected' if medico and m.matricula == medico.matricula }}>
+              {{ m.nombre_completo }} · {{ m.especialidades|map(attribute='nombre')|join(', ') }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Fecha
+        <input type="date" name="fecha" min="{{ hoy.isoformat() }}" value="{{ fecha.isoformat() if fecha else '' }}" required>
+      </label>
+      <button class="boton boton--secundario" type="submit">Ver horarios disponibles</button>
+    </form>
+  </section>
+
+  <section class="tarjeta">
+    <h2>Horarios disponibles</h2>
+    {% if medico and fecha %}
+      {% set franjas = medico.horarios|selectattr('dia_semana', 'equalto', fecha.weekday())|list %}
+      <p class="ayuda">
+        {{ medico.nombre_completo }} · {{ fecha|dia }} {{ fecha|fecha }}.
+        {% if franjas %}Atiende de {% for f in franjas %}{{ f.hora_inicio|hora }} a {{ f.hora_fin|hora }}{% endfor %} hs; se excluyen los turnos ya asignados.
+        {% else %}No atiende ese día.{% endif %}
+      </p>
+      {% if horarios and paciente %}
+      <form class="form" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <input type="hidden" name="dni" value="{{ paciente.dni }}">
+        <input type="hidden" name="matricula" value="{{ medico.matricula }}">
+        <input type="hidden" name="fecha" value="{{ fecha.isoformat() }}">
+        <div class="horarios" role="radiogroup" aria-label="Horarios disponibles">
+          {% for h in horarios %}
+            <label class="horario"><input type="radio" name="hora" value="{{ h|hora }}" required {{ 'checked' if loop.first }}><span>{{ h|hora }}</span></label>
+          {% endfor %}
+        </div>
+        <button class="boton" type="submit">Confirmar turno</button>
+      </form>
+      {% elif horarios %}
+        <p class="alerta alerta--aviso">Ingresá primero el DNI del paciente.</p>
+      {% else %}
+        <p class="alerta alerta--aviso">No quedan horarios libres para ese día. Probá con otra fecha.</p>
+      {% endif %}
+    {% else %}
+      <p class="ayuda">Elegí médico y fecha para ver los horarios libres.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

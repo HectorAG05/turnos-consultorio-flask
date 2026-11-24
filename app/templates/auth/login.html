@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block contenido %}
+<section class="tarjeta centrado">
+  <h1>Iniciar sesión</h1>
+  <p class="subtitulo">Ingresá con tu usuario del consultorio.</p>
+  <form class="form" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label>Usuario
+      <input name="username" value="{{ username or '' }}" autocomplete="username" required autofocus>
+    </label>
+    <label>Contraseña
+      <input name="password" type="password" autocomplete="current-password" required>
+    </label>
+    <button class="boton" type="submit">Ingresar</button>
+  </form>
+  <p class="ayuda">¿Sos paciente y no tenés cuenta? <a href="{{ url_for('auth.registro') }}">Registrate</a>.</p>
+</section>
+{% endblock %}

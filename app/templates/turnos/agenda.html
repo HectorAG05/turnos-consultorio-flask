@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Mis turnos' if current_user.rol == 'paciente' else 'Agenda del día' }}{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <div>
+    {% if current_user.rol == 'paciente' %}
+      <h1>Mis turnos</h1>
+      <p class="subtitulo">Tus 20 turnos más recientes.</p>
+    {% else %}
+      <h1>Agenda del día</h1>
+      <p class="subtitulo">{{ fecha|dia }} {{ fecha|fecha }}{% if current_user.rol == 'medico' %} · {{ current_user.nombre_visible }}{% endif %}</p>
+    {% endif %}
+  </div>
+  {% if current_user.rol in ('secretaria', 'paciente') %}
+    <a class="boton" href="{{ url_for('turnos.nuevo') }}">+ Nuevo turno</a>
+  {% endif %}
+</div>
+
+{% if current_user.rol != 'paciente' %}
+<section class="tarjeta">
+  <form class="form form--en-linea" method="get">
+    <a class="boton boton--secundario" href="{{ url_for('turnos.agenda', fecha=dia_anterior.isoformat(), matricula=matricula) }}" aria-label="Día anterior">&larr;</a>
+    <label>Fecha
+      <input type="date" name="fecha" value="{{ fecha.isoformat() }}">
+    </label>
+    {% if current_user.rol == 'secretaria' %}
+    <label>Médico
+      <select name="matricula">
+        <option value="">Todos</option>
+        {% for medico in medicos %}
+          <option value="{{ medico.matricula }}" {{ 'selected' if medico.matricula == matricula }}>{{ medico.nombre_completo }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endif %}
+    <button class="boton" type="submit">Ver agenda</button>
+    <a class="boton boton--secundario" href="{{ url_for('turnos.agenda', fecha=dia_siguiente.isoformat(), matricula=matricula) }}" aria-label="Día siguiente">&rarr;</a>
+  </form>
+</section>
+{% endif %}
+
+<section class="tarjeta tabla-envoltura">
+  <table>
+    <thead>
+      <tr>
+        {% if current_user.rol == 'paciente' %}<th>Fecha</th>{% endif %}
+        <th>Hora</th>
+        {% if current_user.rol != 'paciente' %}<th>Paciente</th>{% endif %}
+        {% if current_user.rol != 'medico' %}<th>Médico</th>{% endif %}
+        <th>Estado</th>
+        {% if current_user.rol != 'paciente' %}<th title="Probabilidad de ausentismo estimada por el modelo de IA">Riesgo de ausencia</th>{% endif %}
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for turno in turnos %}
+      <tr>
+        {% if current_user.rol == 'paciente' %}<td>{{ turno.fecha|dia }} {{ turno.fecha|fecha }}</td>{% endif %}
+        <td><strong>{{ turno.hora|hora }}</strong></td>
+        {% if current_user.rol != 'paciente' %}<td><a href="{{ url_for('turnos.detalle', id_turno=turno.id_turno) }}">{{ turno.paciente.nombre_completo }}</a></td>{% endif %}
+        {% if current_user.rol != 'medico' %}<td>{{ turno.medico.nombre_completo }}</td>{% endif %}
+        <td><span class="etiqueta estado--{{ turno.estado }}">{{ turno.estado }}</span></td>
+        {% if current_user.rol != 'paciente' %}
+        <td>
+          {% if turno.id_turno in riesgos %}
+            {% set probabilidad, nivel = riesgos[turno.id_turno] %}
+            <span class="etiqueta riesgo--{{ nivel }}">{{ (probabilidad * 100)|round|int }} % · {{ nivel }}</span>
+          {% else %}<span class="ayuda">—</span>{% endif %}
+        </td>
+        {% endif %}
+        <td>
+          {% if turno.esta_activo %}
+          <div class="acciones">
+            {% if current_user.rol in ('secretaria', 'paciente') %}
+              <a class="boton boton--secundario boton--chico" href="{{ url_for('turnos.reprogramar', id_turno=turno.id_turno) }}">Reprogramar</a>
+              <a class="boton boton--peligro boton--chico" href="{{ url_for('turnos.cancelar', id_turno=turno.id_turno) }}">Cancelar</a>
+            {% endif %}
+            {% if current_user.rol in ('secretaria', 'medico') %}
+              <form method="post" action="{{ url_for('turnos.asistencia', id_turno=turno.id_turno) }}">
+                <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                <button class="boton boton--chico" name="estado" value="atendido" type="submit">Atendido</button>
+                <button class="boton boton--secundario boton--chico" name="estado" value="ausente" type="submit">Ausente</button>
+              </form>
+            {% endif %}
+          </div>
+          {% else %}<span class="ayuda">Sin acciones</span>{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="vacio">No hay turnos para mostrar{% if fecha %} en esta fecha{% endif %}.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+<p class="ayuda">Estados posibles: confirmado, reprogramado, cancelado, atendido, ausente. Los turnos cancelados no se eliminan: quedan en el historial.</p>
+{% endblock %}

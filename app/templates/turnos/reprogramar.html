@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block titulo %}Reprogramar turno{% endblock %}
+{% block contenido %}
+<h1>Reprogramar turno</h1>
+<p class="subtitulo">
+  {{ turno.paciente.nombre_completo }} con {{ turno.medico.nombre_completo }} ·
+  actual: {{ turno.fecha|dia }} {{ turno.fecha|fecha }} a las {{ turno.hora|hora }} hs
+</p>
+
+<div class="grilla-2">
+  <section class="tarjeta">
+    <form class="form" method="get">
+      <label>Nueva fecha <span class="ayuda">se mantiene el mismo médico</span>
+        <input type="date" name="fecha" min="{{ hoy.isoformat() }}" value="{{ fecha.isoformat() if fecha else '' }}" required>
+      </label>
+      <button class="boton boton--secundario" type="submit">Ver horarios disponibles</button>
+    </form>
+    {% if current_user.rol == 'paciente' %}
+      <p class="ayuda">Los pacientes pueden reprogramar hasta 24 horas antes del turno.</p>
+    {% endif %}
+  </section>
+
+  <section class="tarjeta">
+    <h2>Horarios disponibles</h2>
+    {% if fecha %}
+      {% if horarios %}
+      <form class="form" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <input type="hidden" name="fecha" value="{{ fecha.isoformat() }}">
+        <div class="horarios" role="radiogroup" aria-label="Horarios disponibles">
+          {% for h in horarios %}
+            <label class="horario"><input type="radio" name="hora" value="{{ h|hora }}" required {{ 'checked' if loop.first }}><span>{{ h|hora }}</span></label>
+          {% endfor %}
+        </div>
+        <div class="acciones">
+          <button class="boton" type="submit">Confirmar nuevo horario</button>
+          <a class="boton boton--secundario" href="{{ url_for('turnos.agenda') }}">Volver</a>
+        </div>
+      </form>
+      {% else %}
+        <p class="alerta alerta--aviso">{{ turno.medico.nombre_completo }} no tiene horarios libres el {{ fecha|fecha }}.</p>
+      {% endif %}
+    {% else %}
+      <p class="ayuda">Elegí una fecha para ver los horarios libres.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

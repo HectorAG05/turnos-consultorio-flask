@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Gestión de turnos{% endblock %} · Consultorio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <header class="barra">
+    <div class="contenedor barra__contenido">
+      <a class="marca" href="{{ url_for('inicio') }}">
+        <span class="marca__icono" aria-hidden="true">+</span>
+        Consultorio <span class="marca__separador">|</span> Gestión de turnos
+      </a>
+      {% if current_user.is_authenticated %}
+      <nav class="menu" aria-label="Principal">
+        <a href="{{ url_for('turnos.agenda') }}">{{ 'Mis turnos' if current_user.rol == 'paciente' else 'Agenda' }}</a>
+        {% if current_user.rol in ('secretaria', 'paciente') %}
+          <a href="{{ url_for('turnos.nuevo') }}">Nuevo turno</a>
+        {% endif %}
+        {% if current_user.rol == 'secretaria' %}
+          <a href="{{ url_for('pacientes.lista') }}">Pacientes</a>
+        {% endif %}
+        {% if current_user.rol in ('secretaria', 'medico') %}
+          <a href="{{ url_for('ia.prediccion') }}">Predicción IA</a>
+        {% endif %}
+      </nav>
+      <div class="usuario">
+        <span>{{ current_user.nombre_visible }}</span>
+        <span class="etiqueta etiqueta--rol">{{ current_user.rol }}</span>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="boton boton--texto" type="submit">Salir</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="contenedor contenido">
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% for categoria, mensaje in mensajes %}
+        <div class="alerta alerta--{{ categoria }}" role="{{ 'alert' if categoria == 'error' else 'status' }}">{{ mensaje }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="pie contenedor">
+    Prototipo · Sistema de gestión de turnos para consultorio médico · Flask + SQLAlchemy + scikit-learn
+  </footer>
+</body>
+</html>

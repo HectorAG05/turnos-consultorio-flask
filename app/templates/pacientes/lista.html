@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Pacientes{% endblock %}
+{% block contenido %}
+<div class="encabezado">
+  <div>
+    <h1>Pacientes</h1>
+    <p class="subtitulo">{{ pacientes|length }} paciente{{ 's' if pacientes|length != 1 }}{% if busqueda %} para «{{ busqueda }}»{% endif %}</p>
+  </div>
+  <a class="boton" href="{{ url_for('pacientes.nuevo') }}">+ Nuevo paciente</a>
+</div>
+
+<section class="tarjeta">
+  <form class="form form--en-linea" method="get">
+    <label>Buscar por DNI, nombre o apellido
+      <input name="q" value="{{ busqueda }}" placeholder="Ej: 32456789 o Fernández">
+    </label>
+    <button class="boton" type="submit">Buscar</button>
+    {% if busqueda %}<a class="boton boton--secundario" href="{{ url_for('pacientes.lista') }}">Limpiar</a>{% endif %}
+  </form>
+</section>
+
+<section class="tarjeta tabla-envoltura">
+  <table>
+    <thead><tr><th>DNI</th><th>Paciente</th><th>Teléfono</th><th>Cobertura</th><th>Acciones</th></tr></thead>
+    <tbody>
+      {% for p in pacientes %}
+      <tr>
+        <td>{{ p.dni }}</td>
+        <td><a href="{{ url_for('pacientes.ficha', dni=p.dni) }}">{{ p.apellido }}, {{ p.nombre }}</a></td>
+        <td>{{ p.telefono }}</td>
+        <td>{{ p.cobertura }}</td>
+        <td class="acciones">
+          <a class="boton boton--secundario boton--chico" href="{{ url_for('pacientes.editar', dni=p.dni) }}">Editar</a>
+          <a class="boton boton--chico" href="{{ url_for('turnos.nuevo', dni=p.dni) }}">Dar turno</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="vacio">No se encontraron pacientes.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

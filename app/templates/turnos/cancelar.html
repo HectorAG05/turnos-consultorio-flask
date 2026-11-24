@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}Cancelar turno{% endblock %}
+{% block contenido %}
+<section class="tarjeta centrado">
+  <h1>Cancelar turno</h1>
+  <p>
+    ¿Confirmás la cancelación del turno de <strong>{{ turno.paciente.nombre_completo }}</strong>
+    con <strong>{{ turno.medico.nombre_completo }}</strong>, el {{ turno.fecha|dia|lower }} {{ turno.fecha|fecha }}
+    a las {{ turno.hora|hora }} hs?
+  </p>
+  <p class="ayuda">El turno no se elimina: queda en estado «cancelado» y el horario se libera.</p>
+  <form class="acciones" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <a class="boton boton--secundario" href="{{ url_for('turnos.agenda', fecha=turno.fecha.isoformat()) }}">No, volver</a>
+    <button class="boton boton--peligro" type="submit">Sí, cancelar</button>
+  </form>
+</section>
+{% endblock %}

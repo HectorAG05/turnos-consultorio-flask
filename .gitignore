@@ -1,0 +1,20 @@
+# Secretos y configuración local
+.env
+
+# Entorno virtual
+.venv/
+venv/
+
+# Base de datos local (SQLite)
+instance/
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Sistema / editores
+.DS_Store
+.vscode/
+.idea/
