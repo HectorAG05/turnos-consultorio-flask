@@ -12,16 +12,16 @@
 
 ## Cómo probarlo
 
-Entrá al link de producción e iniciá sesión con alguno de estos usuarios de demostración:
+Entrá al link de producción e iniciá sesión con alguno de estos usuarios de prueba:
 
-| Usuario | Rol | Qué puede hacer |
-|---|---|---|
-| `laura` | Secretaria | Ver la agenda de todos los médicos, dar de alta, reprogramar y cancelar turnos, registrar asistencia, administrar pacientes y usar la predicción de IA |
-| `sgomez` | Médica (Dra. Silvia Gómez) | Ver solo su agenda y registrar si el paciente asistió o faltó |
-| `mperez` | Médico (Dr. Martín Pérez) | Lo mismo, con su propia agenda |
-| `lucia` | Paciente (Lucía Fernández) | Ver solo sus turnos, pedir uno nuevo, reprogramarlo (con 24 h de anticipación) o cancelarlo |
+| Usuario | Contraseña | Rol | Qué puede hacer |
+|---|---|---|---|
+| `laura` | `Consultorio2026` | Secretaria | Ver la agenda de todos los médicos, dar de alta, reprogramar y cancelar turnos, registrar asistencia, administrar pacientes y usar la predicción de IA |
+| `sgomez` | `Consultorio2026` | Médica (Dra. Silvia Gómez) | Ver solo su agenda y registrar si el paciente asistió o faltó |
+| `mperez` | `Consultorio2026` | Médico (Dr. Martín Pérez) | Lo mismo, con su propia agenda |
+| `lucia` | `Consultorio2026` | Paciente (Lucía Fernández) | Ver solo sus turnos, pedir uno nuevo, reprogramarlo (con 24 h de anticipación) o cancelarlo |
 
-La contraseña de los usuarios de demostración va en el mensaje de entrega. No se publica acá porque el repositorio es público y, como pide la consigna, los datos sensibles no se suben al código. En producción se define con la variable de entorno `SEED_PASSWORD`.
+Son cuentas de demostración, con datos ficticios, pensadas para probar el sistema. La contraseña no está escrita en el código: se toma de la variable de entorno `SEED_PASSWORD` al crear los datos iniciales, y en la base queda guardada solo como hash Bcrypt.
 
 También se puede crear una cuenta de paciente nueva desde **«Registrate»** en la pantalla de login.
 
@@ -165,7 +165,7 @@ Todas las rutas devuelven JSON y requieren sesión iniciada. Sin sesión respond
 
 **Prueba con Postman:**
 
-1. `POST https://turnos-consultorio-6n39.onrender.com/api/login`. Body → raw → JSON: `{"username": "laura", "password": "<contraseña>"}`. Postman guarda la cookie de sesión.
+1. `POST https://turnos-consultorio-6n39.onrender.com/api/login`. Body → raw → JSON: `{"username": "laura", "password": "Consultorio2026"}`. Postman guarda la cookie de sesión.
 2. `GET /api/turnos` lista la agenda.
 3. `POST /api/prediccion` con `{"dias_anticipacion": 30, "hora": 18, "tiene_obra_social": 0, "ausencias_previas": 2}` devuelve:
 
@@ -260,7 +260,7 @@ Completar en `.env`:
 | Variable | Para qué sirve |
 |---|---|
 | `SECRET_KEY` | Firma la cookie de sesión. Se genera con `python -c "import secrets; print(secrets.token_hex(32))"` |
-| `SEED_PASSWORD` | Contraseña de los usuarios de demostración que se crean la primera vez |
+| `SEED_PASSWORD` | Contraseña de los usuarios de demostración que se crean la primera vez. Con `Consultorio2026` quedan igual que en producción |
 | `DATABASE_URL` | Opcional. Si no se define, se usa SQLite en `instance/turnos.db` |
 | `FLASK_DEBUG` | `1` para el modo debug en desarrollo |
 
